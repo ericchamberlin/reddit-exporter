@@ -59,10 +59,11 @@ def scrape_endpoint():
     if not post_url:
         return jsonify({'error': 'No URL provided'}), 400
 
+    # Use environment variables instead of hardcoded credentials
     scraper = RedditScraper(
-        client_id="29G1hvW7cVvNstfws-u4Ng",
-        client_secret="5pLKG-wpeW-06BWIOAI8paPwZ1TpYQ",
-        user_agent="conversations/1.0.0"
+        client_id=os.environ.get('REDDIT_CLIENT_ID'),
+        client_secret=os.environ.get('REDDIT_CLIENT_SECRET'),
+        user_agent=os.environ.get('REDDIT_USER_AGENT')
     )
     
     try:
