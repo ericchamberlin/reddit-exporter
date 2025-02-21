@@ -53,23 +53,26 @@ class RedditScraper:
 
 @app.route('/scrape', methods=['POST'])
 def scrape_endpoint():
-    data = request.json
-    post_url = data.get('url')
-    
-    if not post_url:
-        return jsonify({'error': 'No URL provided'}), 400
-
-    # Use environment variables instead of hardcoded credentials
-    scraper = RedditScraper(
-        client_id=os.environ.get('REDDIT_CLIENT_ID'),
-        client_secret=os.environ.get('REDDIT_CLIENT_SECRET'),
-        user_agent=os.environ.get('REDDIT_USER_AGENT')
-    )
-    
     try:
+        data = request.json
+        post_url = data.get('url')
+        
+        if not post_url:
+            return jsonify({'error': 'No URL provided'}), 400
+
+        # Log environment variables (without secrets)
+        print(f"Checking credentials: {bool(os.environ.get('REDDIT_CLIENT_ID'))}")
+        
+        scraper = RedditScraper(
+            client_id=os.environ.get('REDDIT_CLIENT_ID'),
+            client_secret=os.environ.get('REDDIT_CLIENT_SECRET'),
+            user_agent=os.environ.get('REDDIT_USER_AGENT')
+        )
+        
         result = scraper.scrape_post(post_url)
         return jsonify(result)
     except Exception as e:
+        print(f"Error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
