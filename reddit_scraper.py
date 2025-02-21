@@ -16,30 +16,35 @@ class RedditScraper:
         # Get post data
         post_data = {
             "title": submission.title,
-            "author": str(submission.author),
-            "content": submission.selftext,
-            "score": submission.score,
-            "created_utc": datetime.fromtimestamp(submission.created_utc).strftime('%Y-%m-%d %H:%M:%S'),
-            "comments": []
+            "content": f"Original Post:\n{submission.selftext}\n\n",
+            "comments": [],
+            "plain_text": ""  # New field for formatted text
         }
 
         # Replace "More Comments" with actual comments
         submission.comments.replace_more(limit=None)
 
-        # Get all comments and sort by score
+        # Get top 10 comments by score
         all_comments = submission.comments.list()
         sorted_comments = sorted(all_comments, key=lambda x: x.score, reverse=True)[:10]
 
-        # Get top 10 comments
-        for comment in sorted_comments:
-            comment_data = {
-                "author": str(comment.author),
-                "content": comment.body,
-                "score": comment.score,
-                "created_utc": datetime.fromtimestamp(comment.created_utc).strftime('%Y-%m-%d %H:%M:%S'),
-                "depth": comment.depth
-            }
-            post_data["comments"].append(comment_data)
+        # Format comments into plain text
+        formatted_comments = []
+        for i, comment in enumerate(sorted_comments, 1):
+            comment_text = f"Comment #{i}:\n{comment.body}\n"
+            formatted_comments.append(comment_text)
+            post_data["comments"].append({
+                "text": comment.body,
+                "score": comment.score
+            })
+
+        # Create a clean plain text version
+        post_data["plain_text"] = (
+            f"Title: {post_data['title']}\n\n"
+            f"{post_data['content']}\n"
+            "Top Comments:\n\n" +
+            "\n".join(formatted_comments)
+        )
 
         return post_data
 
