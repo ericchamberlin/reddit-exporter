@@ -1,3 +1,4 @@
-airtable_python_wrapper==0.15.3
 Flask==3.1.0
 praw==7.8.1
+gunicorn==21.2.0
+airtable-python-wrapper==0.15.3
