@@ -54,26 +54,43 @@ class RedditScraper:
 @app.route('/scrape', methods=['POST'])
 def scrape_endpoint():
     try:
+        print("Request received")
         data = request.json
         post_url = data.get('url')
+        print(f"Extracted URL: {post_url}")
         
         if not post_url:
             return jsonify({'error': 'No URL provided'}), 400
 
-        # Log environment variables (without secrets)
-        print(f"Checking credentials: {bool(os.environ.get('REDDIT_CLIENT_ID'))}")
+        # Check if environment variables exist and print their status
+        env_vars = {
+            'REDDIT_CLIENT_ID': bool(os.environ.get('REDDIT_CLIENT_ID')),
+            'REDDIT_CLIENT_SECRET': bool(os.environ.get('REDDIT_CLIENT_SECRET')),
+            'REDDIT_USER_AGENT': bool(os.environ.get('REDDIT_USER_AGENT'))
+        }
+        print(f"Environment variables status: {env_vars}")
         
+        if not all(env_vars.values()):
+            return jsonify({'error': 'Missing Reddit credentials'}), 500
+
         scraper = RedditScraper(
             client_id=os.environ.get('REDDIT_CLIENT_ID'),
             client_secret=os.environ.get('REDDIT_CLIENT_SECRET'),
             user_agent=os.environ.get('REDDIT_USER_AGENT')
         )
         
-        result = scraper.scrape_post(post_url)
-        return jsonify(result)
+        try:
+            print("Attempting to scrape post...")
+            result = scraper.scrape_post(post_url)
+            print("Scraping successful")
+            return jsonify(result)
+        except Exception as e:
+            print(f"Reddit API Error: {str(e)}")
+            return jsonify({'error': f'Reddit API Error: {str(e)}'}), 500
+            
     except Exception as e:
-        print(f"Error: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        print(f"Server Error: {str(e)}")
+        return jsonify({'error': f'Server Error: {str(e)}'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
