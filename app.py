@@ -6,6 +6,11 @@ import os
 
 app = Flask(__name__)
 
+# Add health check route
+@app.route('/', methods=['GET'])
+def health_check():
+    return jsonify({"status": "ok", "message": "API is running"}), 200
+
 class RedditScraper:
     def __init__(self, client_id, client_secret, user_agent):
         self.reddit = praw.Reddit(
